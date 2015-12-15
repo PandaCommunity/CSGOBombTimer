@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Bomb Timer</title>
+		
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+			.bomb {
+				margin-top: 150px;
+				text-align: center;
+			}
+			.match {
+				margin-top: 70px;
+				text-align: center;
+			}
+			.bomb h1 {
+				font-size: 10em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="bomb">
+			<h3>BOMB TIMER:</h3>
+			<h1><span class="c4timer">40</span></h1>
+		</div>
+		<div class="match">
+			<h2 class="gamestats">I am currently not in CS:GO.</h2>
+		</div>
+		
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js"></script>
+		<script>
+			var initTick = 0;
+			var count = 40000;
+			var delay = 20;
+			
+			function now() {
+				return window.performance ? window.performance.now() : Date.now();
+			}
+			
+			function tick() {
+				var remaining = (count - (now() - initTick)) / 1000;
+				remaining = remaining >= 0 ? remaining : 0;
+				var secs = remaining.toFixed(2);
+				document.title = secs;
+				$('.c4timer').html(secs);
+				if (remaining) {
+					setTimeout(tick, delay);
+				} else {
+					document.title = "Bomb Timer";
+					$('.c4timer').html("*BOOM*");
+				}
+			}
+		</script>
+		<script>
+			var socket = io('http://127.0.0.1:1337');
+			socket.on('update', function(payload) {
+				var data = JSON.parse(payload);
+				console.log(payload);
+				if (data['timer'] == 'start') {
+					initTick = now();
+					setTimeout(tick, delay);
+				}
+				$('.gamestats').html(data['gamestring']);
+			});
+		</script>
+	</body>
+</html>
